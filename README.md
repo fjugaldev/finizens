@@ -119,7 +119,7 @@ Al iniciar tendremos lo siguiente:
 - Password BD: finizenz
 - El host de mysql es "mysql" en lugar de "localhost" ya que se trata de un contenedor de docker.
 
-Para mas detalles ver el fichero .env dentro del directorio "***symfony***" o comunícate conmigo mediante ***fjugal.dev@franciscougalde.com*** 'o' a mi móvil ***695913552***
+Para mas detalles ver el fichero .env dentro del directorio "***symfony***" o comunícate conmigo mediante ***fjugal.dev@franciscougalde.com*** ó a mi móvil ***695913552***
 
 ## Consideraciones Finales:
 - Por cuestiones de tiempo no pude implementar al inicio las pruebas unitarias con PHPUnit.
