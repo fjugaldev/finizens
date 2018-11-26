@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use mysql_xdevapi\Exception;
+
 /**
  * Class LogParser
  */
@@ -48,8 +50,8 @@ class LogParser
                     // Execute parser.
                     $data = $parser->parse($line);
                     // Adds the data to the contact array.
-                    $contacts[$data['details']['phone']]['details'] = $contact;
-                    $contacts[$data['details']['phone']]['communications'][] = $data['communications'];
+                    $contacts[$contact['phone']]['details'] = $contact;
+                    $contacts[$contact['phone']]['communications'][] = $data['communications'];
                 }
 
             }
@@ -57,6 +59,7 @@ class LogParser
             return $contacts;
 
         } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
     }
 
