@@ -6,7 +6,7 @@ services:
             - mysql
 
     mysql:
-        container_name: mywalle_mysql
+        container_name: finizens_mysql
         build:
             context: ./docker/db
             dockerfile: Dockerfile.mysql

@@ -20,7 +20,7 @@ class BaseCommunicationModel
     /**
      * @param string $type
      */
-    public function setType($type): string
+    public function setType($type)
     {
         $this->type = $type;
     }
@@ -36,7 +36,7 @@ class BaseCommunicationModel
     /**
      * @param int $phone
      */
-    public function setPhone($phone): int
+    public function setPhone($phone)
     {
         $this->phone = $phone;
     }
@@ -44,7 +44,7 @@ class BaseCommunicationModel
     /**
      * @return \DateTime
      */
-    public function getDate(): \DateTime
+    public function getDate()
     {
         return $this->date;
     }
@@ -52,7 +52,7 @@ class BaseCommunicationModel
     /**
      * @param \DateTime $date
      */
-    public function setDate($date): \DateTime
+    public function setDate($date)
     {
         $this->date = $date;
     }

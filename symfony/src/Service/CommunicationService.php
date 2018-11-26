@@ -38,6 +38,13 @@ class CommunicationService implements BaseService
     {
         // TODO: Implement getAll() method.
     }
+    /**
+     * @return array
+     */
+    public function parse(array $communicationLog): array
+    {
+        // TODO: Implement parse() method.
+    }
 
     /**
      * @param \stdClass $parameters

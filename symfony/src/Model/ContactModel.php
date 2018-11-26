@@ -43,6 +43,8 @@ class ContactModel
     public function setName($name): self
     {
         $this->name = $name;
+
+        return $this;
     }
 
     /**
@@ -61,6 +63,8 @@ class ContactModel
     public function setPhone(int $phone): self
     {
         $this->phone = $phone;
+
+        return $this;
     }
 
     /**

@@ -2,9 +2,24 @@
     <div>
         <b-container class="bv-example-row">
             <b-row>
-                <b-table :items="items" :fields="fields">
+                <h1>Contact List</h1>
+                <b-table striped hover :items="items" :fields="fields">
+                    <template slot="show_details" slot-scope="row">
+                        <!-- we use @click.stop here to prevent emitting of a 'row-clicked' event  -->
+                        <b-button size="sm" @click.stop="row.toggleDetails" class="mr-1">
+                            {{ row.detailsShowing ? 'Hide' : 'Show'}} Communications
+                        </b-button>
+                        <!-- In some circumstances you may need to use @click.native.stop instead -->
+                        <!-- As `row.showDetails` is one-way, we call the toggleDetails function on @change -->
+                        <!--<b-form-checkbox @click.native.stop @change="row.toggleDetails" v-model="row.detailsShowing">
+                            Details via check
+                        </b-form-checkbox>-->
+                    </template>
+                    <template slot="row-details" slot-scope="row">
+                        <b-table striped hover :items="getComm(row.item.id)" :fields="logHeader"></b-table>
+                    </template>
                     <template slot="table-caption">
-                        This is a table caption.
+                        Expand rows to see communication history
                     </template>
                 </b-table>
             </b-row>
@@ -17,13 +32,47 @@
         name: 'app',
         data () {
             return {
-                fields: [ 'first_name', 'last_name', 'age' ],
-                items: [
-                    { age: 40, first_name: 'Dickerson', last_name: 'Macdonald' },
-                    { age: 21, first_name: 'Larsen', last_name: 'Shaw' },
-                    { age: 89, first_name: 'Geneva', last_name: 'Wilson' }
-                ]
+                fields: [
+                    {
+                        key: 'id',
+                        sortable: true
+                    },
+                    {
+                        key: 'name',
+                        sortable: true
+                    },
+                    {
+                        key: 'phone',
+                        sortable: true
+                    },
+                    {
+                        key: 'show_details',
+                        sortable: false
+                    },
+                ],
+                items: [],
+                logHeader: [ 'id', 'phone', 'type', 'incoming', 'outgoing', 'datetime', 'duration'],
+                details: [],
             }
+        },
+        methods: {
+            getComm: function (id) {
+                return this.details[id];
+            }
+        },
+        mounted () {
+            let that = this;
+            this.$http.get('http://127.0.0.1:8008/api/v1/contacts')
+                .then(response => {
+                    // JSON responses are automatically parsed.
+                    response.data.data.forEach(function (item) {
+                        that.items.push(item.contact);
+                        that.details[item.contact.id] = item.communications;
+                    });
+                })
+                .catch(e => {
+                    console.log(e);
+                })
         }
     }
 </script>

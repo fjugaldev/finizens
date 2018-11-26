@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Service;
 
 
@@ -9,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Interface BaseService
  */
-interface BaseService
+interface BaseServiceInterface
 {
     /**
      * @param int $id
@@ -22,6 +21,13 @@ interface BaseService
      * @return array
      */
     public function getAll(): array;
+
+    /**
+     * @param array $commuicationLog
+     *
+     * @return array
+     */
+    public function parse(array $commuicationLog): array;
 
     /**
      * @param \stdClass $parameters
