@@ -12,23 +12,23 @@ La presente app tiene como finalidad implementar una solución como parte del pr
 1. MySQL 5.7
 
 ## TO-DO:
-[x] Configurar entorno con Docker
-[x] Instalar paquetes requeridos backend.
-[x] Diseñar y crear de Entidades.
-[x] Generar BD desde doctrine command
-[x] Generar schema de bd con doctrine command
-[x] Implementar el API Rest, Servicios y Clases requeridas para la lógica de negocio.
-[x] Documentar entre lineas de código.
-[x] Aplicar estandares de Symfony (PSR-1, PSR-2 y PSR-4).
-[x] Aplicar Mess Detector.
-[x] Instalar paquetes requeridos frontend
-[x] Instalar y configurar Bootstrap-Vue
-[x] Instalar y configurar Axio
-[x] Instalar y configurar Vue-Router -> Para enrutamiento, no se utilizó por falta de tiempo.
-[x] Instalar y configurar Vuex -> Para manejo de estados y store, no se utilizó por falta de tiempo.
-[x] Configurar Webpack encore.
-[x] Implementar interfaz con Vue.js
-[ ] Realizar pruebas unitarias (PHPUnit)
+- [X] Configurar entorno con Docker
+- [X] Instalar paquetes requeridos backend.
+- [X] Diseñar y crear de Entidades.
+- [X] Generar BD desde doctrine command
+- [X] Generar schema de bd con doctrine command
+- [X] Implementar el API Rest, Servicios y Clases requeridas para la lógica de negocio.
+- [X] Documentar entre lineas de código.
+- [X] Aplicar estandares de Symfony (PSR-1, PSR-2 y PSR-4).
+- [X] Aplicar Mess Detector.
+- [X] Instalar paquetes requeridos frontend
+    - [X] Instalar y configurar Bootstrap-Vue
+    - [X] Instalar y configurar Axio
+    - [X] Instalar y configurar Vue-Router -> Para enrutamiento, no se utilizó por falta de tiempo.
+    - [X] Instalar y configurar Vuex -> Para manejo de estados y store, no se utilizó por falta de tiempo.
+- [X] Configurar Webpack encore.
+- [X] Implementar interfaz con Vue.js
+- [ ] Realizar pruebas unitarias (PHPUnit)
 
 ## Instalación
 
