@@ -2,14 +2,13 @@ version: '3'
 
 services:
         app:
-            container_name: mywalle_app
+            container_name: finizens_app
             build:
                 context: ./docker/app
                 args:
                     - timezone=${TZ}
             volumes:
                 - ./symfony:/var/www/html:rw,cached
-                - app_log:/var/www/html/var/log:rw
             env_file:
                 - .env
             environment:
@@ -17,7 +16,7 @@ services:
                 PHP_IDE_CONFIG: serverName=${NGINX_HOST}
 
         nginx:
-            container_name: mywalle_nginx
+            container_name: finizens_nginx
             build:
                 context: ./docker/nginx
                 args:
@@ -38,32 +37,5 @@ services:
                 > /etc/nginx/conf.d/default.conf
                 && exec nginx -g 'daemon off;'"
 
-#        redis:
-#            container_name: mywalle_redis
-#            build:
-#                context: ./docker/redis
-
-#        elk:
-#            build:
-#                context: ./docker/elk
-#            ports:
-#                - "5601:5601"
-#                - "9200:9200"
-#                - "5044:5044"
-#            environment:
-#                - ELASTICSEARCH_START
-#                - LOGSTASH_START
-#                - KIBANA_START
-#                - TZ
-
-#        filebeat:
-#            build:
-#                context: ./docker/elk
-#                dockerfile: Dockerfile.filebeat
-#            volumes:
-#                - app_log:/var/log/app
-#                - nginx_log:/var/log/nginx
-
 volumes:
-    app_log:
     nginx_log:

@@ -3,35 +3,36 @@
 namespace App\Service;
 
 
-use App\Model\CallModel;
-use App\Model\ContactModel;
-use App\Model\SmsModel;
+use App\Entity\Communication;
+use App\Entity\CommunicationType;
+use App\Entity\Contact;
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class ContactService
  */
-class ContactService implements BaseService
+class ContactService implements BaseServiceInterface
 {
-    const LOG_URL = 'https://gist.githubusercontent.com/miguelgf/e099e5e5bfde4f6428edb0ae94946c83/raw/f2eb3e6f5b4d78e9172b946379c6900db7a2c578/communications.611111111.log';
     const TYPE_CALL = 'call';
     const TYPE_SMS = 'sms';
 
     /** @var ContainerInterface */
     protected $container;
 
-    /** @var array */
-    protected $communicationLog;
+    /** @var EntityManager */
+    protected $entityManager;
 
     /**
      * InventoryService constructor.
      *
      * @param ContainerInterface $container
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, EntityManager $entityManager)
     {
         $this->setContainer($container);
-        $this->communicationLog = explode(PHP_EOL, file_get_contents(self::LOG_URL));
+        $this->setEntityManager($entityManager);
+        //$this->communicationLog = explode(PHP_EOL, file_get_contents(self::LOG_URL));
     }
 
     /**
@@ -51,46 +52,94 @@ class ContactService implements BaseService
     public function getAll(): array
     {
         // TODO: Implement getAll() method.
-        $contacts = $this->getContainer()->get('api.service.log_parser')->parse($this->getCommunicationLog());
-        $data = [];
-        foreach ($contacts as $detail) {
-            $contact = new ContactModel();
-            $contact->setName($detail['details']['name']);
-            $contact->setPhone($detail['details']['phone']);
+    }
 
-            $communications = [];
-            foreach ($detail['communications'] as $type => $communication) {
-                switch ($type) {
+    /**
+     * @return array
+     */
+    public function parse(array $communicationLog): array
+    {
+        // Gets the log parser service.
+        $contactsLog = $this->getContainer()->get('api.service.log_parser')->parse($communicationLog);
+        $contacts = [];
+        foreach ($contactsLog as $detail) {
+            $em = $this->getEntityManager();
+
+            // Verifies if the contact already exists
+            $contact = $em->getRepository(Contact::class)->findOneBy([
+                'phone' => $detail['details']['phone'],
+            ]);
+
+            // If contact doesn't exits, creates a new one.
+            if (is_null($contact)) {
+                $contact = new Contact();
+                $contact->setName($detail['details']['name']);
+                $contact->setPhone($detail['details']['phone']);
+                $em->persist($contact);
+                $em->flush();
+            }
+
+            foreach ($detail['communications'] as $comm) {
+                // Creates a new communication entity object.
+                $communication = new Communication();
+
+                switch ($comm['type']) {
+                    // Type call
                     case self::TYPE_CALL:
-                        $comm = new CallModel();
-                        $comm->setType(self::TYPE_CALL);
-                        $comm->setPhone($communication['phone']);
-                        $comm->setDate($communication['phone']);
-                        $comm->setCallDuration($communication['phone']);
+                        // Finds the type entity object.
+                        $type = $em->getRepository(CommunicationType::class)->findOneBy([
+                            'name' => self::TYPE_CALL,
+                        ]);
+                        // Sets communication type.
+                        $communication->setType($type);
+                        // Sets the call duration.
+                        $time = substr($comm['duration'],0,2).':'.
+                            substr($comm['duration'], 2, 2).':'.
+                            substr($comm['duration'], 4, 2);
+                        $duration = \DateTime::createFromFormat('H:i:s', $time);
+                        $communication->setDuration($duration);
+                        // Sets Incoming / Outgoing direction.
+                        $communication->setIsIncoming($comm['inOut'] === 'incoming' ? true : false);
+                        $communication->setIsOutgoing($comm['inOut'] === 'outgoing' ? true : false);
                         break;
 
+                    // Type sms
                     case self::TYPE_SMS:
-                        $comm = new SmsModel();
-                        $comm->setType(self::TYPE_SMS);
-                        $comm->setPhone($communication['phone']);
-                        $comm->setDate($communication['phone']);
+                        // Finds the type entity object.
+                        $type = $em->getRepository(CommunicationType::class)->findOneBy([
+                            'name' => self::TYPE_SMS,
+                        ]);
+                        // Sets the communication type.
+                        $communication->setType($type);
+                        // Sets Sent / Received direction.
+                        $communication->setIsIncoming($comm['inOut'] === 'received' ? true : false);
+                        $communication->setIsOutgoing($comm['inOut'] === 'sent' ? true : false);
                         break;
 
                     default:
                         throw new \Exception("Invalid communication type.");
                 }
-
-                $communications[] = $comm->__toJson();
+                // Sets the destination phone.
+                $communication->setPhone($comm['phone']);
+                // Sets the datetime for the communication.
+                $date = \DateTime::createFromFormat('dmYHis', $comm['date']);
+                $communication->setDatetime($date);
+                // Saves the communication.
+                $em->persist($communication);
+                // Add the communication to the contact
+                $contact->addCommunication($communication);
+                // Saves the contact.
+                $em->persist($contact);
             }
 
-            $contact->setCommunicationLog($communications);
-            $contacts[] = $contact->__toJson();
+            // Commit changes.
+            $em->flush();
+
+            // Push each contact in contacts array.
+            array_push($contacts, $contact->__toJson());
         }
 
-        return [
-            'data' => $contacts,
-            'status' => 200,
-        ];
+        return $contacts;
     }
 
     /**
@@ -139,7 +188,7 @@ class ContactService implements BaseService
      * Gets the Service Container.
      * @return ContainerInterface
      */
-    private function getContainer(): ContainerInterface
+    protected function getContainer(): ContainerInterface
     {
         return $this->container;
     }
@@ -150,10 +199,26 @@ class ContactService implements BaseService
      *
      * @return self
      */
-    private function setContainer(ContainerInterface $container): self
+    protected function setContainer(ContainerInterface $container): self
     {
         $this->container = $container;
 
         return $this;
+    }
+
+    /**
+     * @return EntityManager
+     */
+    protected function getEntityManager(): EntityManager
+    {
+        return $this->entityManager;
+    }
+
+    /**
+     * @param EntityManager $entityManager
+     */
+    protected function setEntityManager(EntityManager $entityManager): void
+    {
+        $this->entityManager = $entityManager;
     }
 }

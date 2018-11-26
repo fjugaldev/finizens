@@ -1,38 +1,56 @@
+# Finizens APP
+La presente app tiene como finalidad implementar una solución como parte del proceso de selección de la empresa.
 
-# Docker-Symfony4-VueJS
+## Requerimientos necesarios:
+1. Docker
+1. Npm o Yarn (Recomendado)
+1. Composer
 
-REGEX PATTERN
-```regexp
-[CcSs][0-9]{9}[0-9]{9}[01]{1}[A-Za-z[:space:]]{1,24}[0-9]{14}[0-9]{6}
-```
+## Tecnología empleada:
+1. Symfony 4.1.8 para el backend y API Rest.
+1. Vue.js para el frontend.
+1. MySQL 5.7
 
-Symfony 4 skeleton con VueJS, Vuex, Vue-router y Webpack.
-Todo configurado dentro de un entorno Docker (NGINX + PHP-FM + MySQL + Redis)
-
-## ¿Qué incluye?
--Symfony 4.1.6 skeleton
-
--Twig, Annotations, Webserver y Maker bundle
-
--Encore webpack con VueLoader y SassLoader configurado
-
--Vue, Vuex y Vue-Router
-
--Axios esta prototipado como variable $http
+## TO-DO:
+- [X] Configurar entorno con Docker
+- [X] Instalar paquetes requeridos backend.
+- [X] Diseñar y crear de Entidades.
+- [X] Generar BD desde doctrine command
+- [X] Generar schema de bd con doctrine command
+- [X] Implementar el API Rest, Servicios y Clases requeridas para la lógica de negocio.
+- [X] Documentar entre lineas de código.
+- [X] Aplicar estandares de Symfony (PSR-1, PSR-2 y PSR-4).
+- [X] Aplicar Mess Detector.
+- [X] Instalar paquetes requeridos frontend
+    - [X] Instalar y configurar Bootstrap-Vue
+    - [X] Instalar y configurar Axio
+    - [X] Instalar y configurar Vue-Router -> Para enrutamiento, no se utilizó por falta de tiempo.
+    - [X] Instalar y configurar Vuex -> Para manejo de estados y store, no se utilizó por falta de tiempo.
+- [X] Configurar Webpack encore.
+- [X] Implementar interfaz con Vue.js
+- [ ] Realizar pruebas unitarias (PHPUnit)
 
 ## Instalación
 
-Clona este repositorio:
+Clonar el repositorio:
 
 ```sh
-$ git clone https://github.com/fjugaldev/docker-symfony4-vue.git
+$ git clone https://github.com/fjugaldev/finizens.git
 ```
-
-El proyecto de symfony esta dentro de la carpeta "Symfony".
-
 ```sh
-$ cd docker-symfony4-vue # ó la carpeta donde hayas clonado el repositorio
+$ cd finizens
 ```
+Generamos nuestro stack de docker a instalar
+```sh
+$ docker-compose -f docker-compose.yaml -f docker-compose.mysql.yaml config > docker-stack.yaml
+```
+- Realizamos el build basado en nuestro docker-stack.yaml
+```sh
+$ docker-compose -f docker-stack.yaml build
+```
+Ahora instalamos dependencias del proyecto, tanto para backend como frontend
+La app esta desarrollada bajo el directorio "***symfony***"
+
 ```sh
 $ cd symfony
 ```
@@ -51,28 +69,66 @@ Compilar archivos js y css
 $ ./node_modules/.bin/encore dev 
 ```
 
-Ejecutar Servidor Web de Symfony
+Iniciar nuestros contenedores
 
 ```sh
-$ php bin/console server:run
+$ cd ..
 ```
-Iniciará un servidor accesible en http://localhost:8080
-
-## Vue development
-
-Los archivos de Vue estan ubicados en la carpeta /assets/js. Modifica estos archivos como si se trata de un proyecto normal de VueJS.
-
-Sugiero utilizar hot-reload encore server. Cuando un archivo es actualizado, webpack será lanzado automáticamente. Inícialo con este comando:
 
 ```sh
-$ ./node_modules/.bin/encore dev --watch
+$ docker-compose -f docker-stack.yaml up -d
 ```
-Los archivos app.js y app.css serán compilados en la carpeta /public/build.
 
-DefaultController.php contiene solo una ruta raiz que renderiza los archivos necesarios.
+Añadimos el host de mysql para que apunte a 127.0.0.1 en nuestro fichero de hosts
 
-SassLoader esta activado, por lo que todos los cambios en /assets/js/app.scss serán compilados también.
+```sh
+$ echo '127.0.0.1       mysql' | sudo tee -a /etc/hosts
+```
 
-Axios esta prototipado como $http. Este servicio estará disponible en toda la app VueJS.
+Seguidamente procederemos a generar el schema de la bd:
 
-Vuex y Vue-router están incluidos también. Sientete sibre de añadir tantas rutas como stores desees.
+```sh
+$ cd symfony
+```
+```sh
+$ php bin/console doctrine:schema:update --force
+```
+Precargamos data necesaria en el contenedor de mysql:
+
+```sh
+$ cd ..
+```
+
+```sh
+$ docker exec -i finizens_mysql mysql -ufinizens -pfinizens finizens_db < symfony/finizens_db_communication_type.sql
+```
+
+Parseamos el fichero mediante el comando (Ejecutar una sola vez, Valida los contactos generados y no los duplica pero el log de comunicaciones no pude validarlo por temas de tiempo):
+
+```sh
+$ php bin/console finizens:parse-log 611111111
+```
+
+Ejecutamos la app dirigiendonos a: http://127.0.0.1:8008/contacts
+
+Al iniciar tendremos lo siguiente: 
+- Servidor ejecutandose en http://127.0.0.1:8008
+- Servidor mysql en puerto 3306
+- Base de datos: finizens_db
+- Usuario BD: finizens
+- Password BD: finizenz
+- El host de mysql es "mysql" en lugar de "localhost" ya que se trata de un contenedor de docker.
+
+Para mas detalles ver el fichero .env dentro del directorio "***symfony***" o comunícate conmigo mediante ***fjugal.dev@franciscougalde.com*** 'o' a mi móvil ***695913552***
+
+## Consideraciones Finales:
+- Por cuestiones de tiempo no pude implementar al inicio las pruebas unitarias con PHPUnit.
+- Quería implementar DDD mediante la arquitectura en cebolla (Onion Architecture) pero por cuestiones de tiempo, no pude terminar de configurar otro proyecto en Symfony en donde estoy generando un skeleton base para futuros proyectos.
+- El comando implementado para parsear los ficheros solo parsea un fichero indicando un número de teléfono a consultar. La idea era tambien crear un comando padre o manager para leer un directorio de logs y que este se encargara de ejecutar recursivamente el comando que actualmente esta generado.
+- Me faltó añadir seguridad mediante tokens al API por cuestiones de tiempo.
+- Me faltó validar un poco más los datos de entrada y salida por cuestiones de tiempo.
+- Me faltó gestionar un poco mejor los errores por cuestiones de tiempo.
+
+
+
+

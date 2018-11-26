@@ -10,19 +10,20 @@ class CallParser implements BaseParserInterface
 {
 
     /**
+     * Parses the call communication
      * @param string $line
      *
      * @return array
      */
     public function parse(string $line): array
     {
-        $inOutCall = [];
-        $contactName = [];
-        $contactPhone = [];
+
+
         $dateTime = [];
         $callDuration = [];
         $targetPhone = [];
 
+        // Extract if incoming or outgoing call.
         preg_match(
             LogParser::IN_OUT_REGEX,
             $line,
@@ -31,19 +32,7 @@ class CallParser implements BaseParserInterface
             LogParser::IN_OUT_OFFSET
         );
 
-        $phoneOffset = (int) $inOutCall[0] === 1
-            ? LogParser::PHONE_OFFSET_INCOMING_CALL
-            : LogParser::PHONE_OFFSET_OUTGOING_CALL;
-
-        preg_match(
-            LogParser::PHONE_REGEX,
-            $line,
-            $contactPhone,
-            PREG_OFFSET_CAPTURE,
-            $phoneOffset
-        );
-        $contactPhone = (int) current(current($contactPhone));
-
+        // Extracts the target phone.
         $phoneOffset = (int) $inOutCall[0] === 1
             ? LogParser::PHONE_OFFSET_OUTGOING_CALL
             : LogParser::PHONE_OFFSET_INCOMING_CALL;
@@ -57,15 +46,7 @@ class CallParser implements BaseParserInterface
         );
         $targetPhone = (int) current(current($targetPhone));
 
-        preg_match(
-            LogParser::NAME_REGEX,
-            $line,
-            $contactName,
-            PREG_OFFSET_CAPTURE,
-            LogParser::NAME_OFFSET
-        );
-        $contactName = trim(current(current($contactName)));
-
+        // Extracts the datetime.
         preg_match(
             LogParser::DATE_TIME_REGEX,
             $line,
@@ -75,6 +56,7 @@ class CallParser implements BaseParserInterface
         );
         $dateTime = current(current($dateTime));
 
+        // Extracts the call duration.
         preg_match(
             LogParser::CALL_DURATION_REGEX,
             $line,
@@ -84,18 +66,14 @@ class CallParser implements BaseParserInterface
         );
         $callDuration = current(current($callDuration));
 
+        // Returns the parsed metadata.
         $data = [
-            'details' => [
-                'name' => $contactName,
-                'phone' => $contactPhone,
-            ],
             'communications' => [
-                'call' => [
-                    'type' => (int) $inOutCall[0] === 1 ? 'incoming' : 'outgoing',
-                    'phone' => $targetPhone,
-                    'date' => $dateTime,
-                    'duration' => $callDuration,
-                ],
+                'type' => 'call',
+                'inOut' => (int) $inOutCall[0] === 1 ? 'incoming' : 'outgoing',
+                'phone' => $targetPhone,
+                'date' => $dateTime,
+                'duration' => $callDuration,
             ],
         ];
 

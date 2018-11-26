@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Web;
 
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
-class DefaultController extends Controller
+class WebController extends Controller
 {
     /**
-     * @Route("/", name="default")
+     * @Route("/contacts", name="default")
      */
     public function index()
     {

@@ -2,10 +2,7 @@
 
 namespace App\Utils;
 
-
-use function Couchbase\defaultDecoder;
 use mysql_xdevapi\Exception;
-use phpDocumentor\Reflection\Types\Mixed_;
 
 /**
  * Class LogParser
@@ -38,22 +35,31 @@ class LogParser
         try {
             $contacts = [];
             foreach ($communicationLog as $line) {
+                // Validates each line in order to check the expected format
                 if (preg_match(self::FULL_CALL_REGEX_VALIDATOR, $line) ||
                     preg_match(self::FULL_SMS_REGEX_VALIDATOR, $line)
                 ) {
+                    // Parse Contact details.
+                    $contactParser = new ContactParser();
+                    $contact = $contactParser->parse($line);
                     $type = [];
+                    // Extracts the type.
                     preg_match(self::CALL_SMS_REGEX, $line, $type);
+                    // Gets the parser.
                     $parser = $this->getParser(current($type));
+                    // Execute parser.
                     $data = $parser->parse($line);
-                    $contacts[$data['details']['phone']]['details'] = $data['details'];
-                    $contacts[$data['details']['phone']]['communications'][] = $data['communications'];
+                    // Adds the data to the contact array.
+                    $contacts[$contact['phone']]['details'] = $contact;
+                    $contacts[$contact['phone']]['communications'][] = $data['communications'];
                 }
 
             }
-
+            // Return parsed metadata.
             return $contacts;
 
         } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
     }
 

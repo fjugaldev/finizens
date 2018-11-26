@@ -33,17 +33,8 @@ services:
     api.service.log_parser:
         class: App\Utils\LogParser
         public: true
-        
-    api.service.contact_parser:
-        class: App\Utils\ContactParser
-        public: true
     
     api.service.contacts_service:
         class: App\Service\ContactService
         public: true
-        arguments: ['@service_container']
-
-    api.service.communications_service:
-        class: App\Service\CommunicationService
-        public: true
-        arguments: ['@service_container']
+        arguments: ['@service_container', '@doctrine.orm.entity_manager']
